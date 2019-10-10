@@ -36,17 +36,25 @@ def receive_message():
                 for message in messaging:
                     if message.get("message"):
                         recipient_id = message["sender"]["id"]
+                        profile = fb.get_profile(recipient_id)
+                        fullname = profile["fullname"]
+
                         if message["message"].get("text"):
                             text = message["message"].get("text")
-                            profile = fb.get_profile(recipient_id)
-
-                            data = qismo.send_message(
-                                recipient_id, profile["fullname"], text
-                            )
+                            data = qismo.send_message(recipient_id, fullname, text)
 
                         if message["message"].get("attachments"):
-                            response_sent_nontext = get_message()
-                            send_message(recipient_id, response_sent_nontext)
+                            message = message["message"]
+                            attachments = message["attachments"]
+                            attachment = attachments[0]
+                            payload = attachment["payload"]
+                            if payload is not None:
+                                attachment_url = payload["url"]
+
+                                if attachment_url is not None:
+                                    data = qismo.send_attachment_message(
+                                        recipient_id, fullname, attachment_url
+                                    )
 
             success_message = "Success processing facebook message"
             app.logger.info(success_message)
@@ -67,8 +75,26 @@ def qismo_message():
         if recipient_id is None:
             raise Exception("Customer ID not found")
 
-        text = output["payload"]["message"]["text"]
-        fb.send_message(recipient_id, text)
+        # message_type = output["payload"]["message"]["type"]
+        payload = output["payload"]
+        message = payload["message"]
+        message_type = message["type"]
+
+        if message_type == "text":
+            text = message["text"]
+            fb.send_message(recipient_id, text)
+
+        elif message_type == "file_attachment":
+            attachment_payload = message["payload"]
+            caption = attachment_payload["caption"]
+            attachment_url = attachment_payload["url"]
+
+            # !!!Send file like csv still error
+            fb.send_attachment_message(recipient_id, attachment_url)
+
+            if caption is not None or caption is not "":
+                fb.send_message(recipient_id, caption)
+
         return jsonify(success.message("Success handling Qismo message")), 200
     except Exception as e:
         app.logger.error(str(e))

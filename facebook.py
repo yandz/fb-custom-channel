@@ -17,6 +17,17 @@ class Facebook:
         else:
             return "success"
 
+    def send_attachment_message(recipient_id, attachment_url):
+        res = bot.send_image_url(recipient_id, attachment_url)
+
+        print(res)
+
+        if "error" in res:
+            error_message = res["error"]["message"]
+            raise Exception(f"Error while sending message to facebook: {error_message}")
+        else:
+            return "success"
+
     def verify_fb_token(token_sent, hub_challenge):
         if token_sent != FB_VERIFY_TOKEN:
             raise Exception("Invalid verification token")
@@ -33,7 +44,7 @@ class Facebook:
 
         if res.status_code is not 200:
             error_message = json_res["error"]["message"]
-            raise Exception(error_message)
+            raise Exception(f"Fb Get Profile Error: {error_message}")
         else:
             profile = {}
             profile["fullname"] = f"{json_res['first_name']} {json_res['last_name']}"
