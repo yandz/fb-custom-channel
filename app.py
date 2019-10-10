@@ -1,6 +1,7 @@
 import json
 from flask import Flask, request, jsonify
 from qismo import Qismo as qismo
+from qiscus import Qiscus as qiscus
 from facebook import Facebook as fb
 from formatter import SuccessFomatter as success
 from formatter import ErrorFormatter as error
@@ -37,7 +38,12 @@ def receive_message():
                         recipient_id = message["sender"]["id"]
                         if message["message"].get("text"):
                             text = message["message"].get("text")
-                            qismo.send_message(recipient_id, text)
+                            profile = fb.get_profile(recipient_id)
+
+                            data = qismo.send_message(
+                                recipient_id, profile["fullname"], text
+                            )
+
                         if message["message"].get("attachments"):
                             response_sent_nontext = get_message()
                             send_message(recipient_id, response_sent_nontext)
