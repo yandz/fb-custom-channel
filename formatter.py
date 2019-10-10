@@ -25,3 +25,12 @@ class ErrorFormatter:
         response_data["error"]["type"] = "QismoMessageHandlerError"
 
         return response_data
+
+    def home_error(message):
+        response_data = {}
+        response_data["code"] = 500
+        response_data["error"] = {}
+        response_data["error"]["message"] = message
+        response_data["error"]["type"] = "HomeError"
+
+        return response_data

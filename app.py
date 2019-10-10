@@ -11,6 +11,14 @@ from werkzeug.exceptions import HTTPException
 app = Flask(__name__)
 
 
+@app.route("/", methods=["GET", "POST"])
+def home():
+    try:
+        return jsonify(success.message("Success")), 200
+    except expression as identifier:
+        return jsonify(error.home_error(str(e))), 500
+
+
 @app.route("/facebook-message", methods=["GET", "POST"])
 def receive_message():
     try:
@@ -36,7 +44,7 @@ def receive_message():
 
             success_message = "Success processing facebook message"
             app.logger.info(success_message)
-            return (jsonify(success.message(success_message)), 200)
+            return jsonify(success.message(success_message)), 200
     except Exception as e:
         app.logger.error(str(e))
         return jsonify(error.fb_error(str(e))), 200
